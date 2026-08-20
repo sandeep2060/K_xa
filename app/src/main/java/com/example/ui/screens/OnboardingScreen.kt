@@ -207,15 +207,15 @@ fun OnboardingScreen(
                 exit = fadeOut()
             ) {
                 TextButton(
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(pages.size - 1)
-                        }
-                    }
+                    onClick = onSignIn,
+                    modifier = Modifier.testTag("btn_skip_onboarding")
                 ) {
                     Text(
                         text = "Skip",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        ),
                         color = PurpleLight
                     )
                 }
@@ -230,6 +230,7 @@ fun OnboardingScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+                .testTag("pager_onboarding")
         ) { pageIndex ->
             val page = pages[pageIndex]
 
@@ -367,11 +368,13 @@ fun OnboardingScreen(
             }
         }
 
-        // Animated Page Indicator Dots & Navigation Indicator
+        // Animated Page Indicator Dots & Navigation Indicator (with 48dp touch target)
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 14.dp)
+            modifier = Modifier
+                .padding(vertical = 10.dp)
+                .testTag("onboarding_page_indicators")
         ) {
             repeat(pages.size) { index ->
                 val isSelected = pagerState.currentPage == index
@@ -384,22 +387,29 @@ fun OnboardingScreen(
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
-                        .height(8.dp)
-                        .width(width.dp)
                         .clip(RoundedCornerShape(KxaRadius.pill))
-                        .background(
-                            if (isSelected) {
-                                Brush.linearGradient(pages[index].gradient)
-                            } else {
-                                Brush.linearGradient(listOf(KxaTheme.colors.border, KxaTheme.colors.border))
-                            }
-                        )
                         .clickable {
                             scope.launch {
                                 pagerState.animateScrollToPage(index)
                             }
                         }
-                )
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(8.dp)
+                            .width(width.dp)
+                            .clip(RoundedCornerShape(KxaRadius.pill))
+                            .background(
+                                if (isSelected) {
+                                    Brush.linearGradient(pages[index].gradient)
+                                } else {
+                                    Brush.linearGradient(listOf(KxaTheme.colors.border, KxaTheme.colors.border))
+                                }
+                            )
+                    )
+                }
             }
         }
 

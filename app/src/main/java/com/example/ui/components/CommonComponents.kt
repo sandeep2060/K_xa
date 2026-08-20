@@ -126,21 +126,15 @@ fun KXaButton(
     testTag: String = "kxa_button"
 ) {
     val effectiveLeadingIcon = leadingIcon ?: icon
-    val isPressed = remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed.value) 0.96f else 1f,
-        animationSpec = tween(120),
-        label = "btn_press"
-    )
 
-    Box(
+    Surface(
+        onClick = onClick,
+        enabled = enabled && !isLoading,
+        shape = shape,
+        color = Color.Transparent,
         modifier = modifier
             .testTag(testTag)
-            .height(50.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
+            .height(52.dp)
             .clip(shape)
             .background(
                 if (enabled) {
@@ -154,64 +148,51 @@ fun KXaButton(
                     )
                 }
             )
-            .clickable(
-                enabled = enabled && !isLoading,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .pointerInput(enabled) {
-                detectTapGestures(
-                    onPress = {
-                        if (enabled && !isLoading) {
-                            isPressed.value = true
-                            tryAwaitRelease()
-                            isPressed.value = false
-                        }
-                    }
-                )
-            },
-        contentAlignment = Alignment.Center
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(22.dp),
-                color = Color.White,
-                strokeWidth = 2.5.dp
-            )
-        } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = KxaSpacing.standard)
-            ) {
-                if (effectiveLeadingIcon != null) {
-                    Icon(
-                        imageVector = effectiveLeadingIcon,
-                        contentDescription = null,
-                        tint = if (enabled) Color.White else KxaTheme.colors.textMuted,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(KxaSpacing.sm))
-                }
-
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (enabled) Color.White else KxaTheme.colors.textMuted
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(22.dp),
+                    color = Color.White,
+                    strokeWidth = 2.5.dp
                 )
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = KxaSpacing.standard)
+                ) {
+                    if (effectiveLeadingIcon != null) {
+                        Icon(
+                            imageVector = effectiveLeadingIcon,
+                            contentDescription = null,
+                            tint = if (enabled) Color.White else KxaTheme.colors.textMuted,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(KxaSpacing.sm))
+                    }
 
-                if (trailingIcon != null) {
-                    Spacer(modifier = Modifier.width(KxaSpacing.sm))
-                    Icon(
-                        imageVector = trailingIcon,
-                        contentDescription = null,
-                        tint = if (enabled) Color.White else KxaTheme.colors.textMuted,
-                        modifier = Modifier.size(18.dp)
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = if (enabled) Color.White else KxaTheme.colors.textMuted
                     )
+
+                    if (trailingIcon != null) {
+                        Spacer(modifier = Modifier.width(KxaSpacing.sm))
+                        Icon(
+                            imageVector = trailingIcon,
+                            contentDescription = null,
+                            tint = if (enabled) Color.White else KxaTheme.colors.textMuted,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }
@@ -226,35 +207,23 @@ fun KXaOutlinedButton(
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null,
     icon: ImageVector? = null,
+    trailingIcon: ImageVector? = null,
     borderColor: Color = KxaTheme.colors.border,
     textColor: Color = KxaTheme.colors.textPrimary,
     shape: Shape = RoundedCornerShape(KxaRadius.md),
     testTag: String = "kxa_outlined_button"
 ) {
     val effectiveLeadingIcon = leadingIcon ?: icon
-    val isPressed = remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed.value) 0.96f else 1f,
-        animationSpec = tween(120),
-        label = "btn_outlined_press"
-    )
 
-    Box(
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = shape,
+        color = KxaTheme.colors.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
         modifier = modifier
             .testTag(testTag)
-            .height(50.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clip(shape)
-            .background(KxaTheme.colors.surface)
-            .border(1.dp, borderColor, shape)
-            .clickable(
-                enabled = enabled,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
+            .height(52.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -279,6 +248,16 @@ fun KXaOutlinedButton(
                 ),
                 color = textColor
             )
+
+            if (trailingIcon != null) {
+                Spacer(modifier = Modifier.width(KxaSpacing.sm))
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = null,
+                    tint = textColor,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }
@@ -1139,40 +1118,19 @@ fun KXaReactionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPressed = remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed.value) 1.25f else 1f,
-        animationSpec = tween(120),
-        label = "reaction_scale"
-    )
-
-    Box(
-        modifier = modifier
-            .size(44.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clip(CircleShape)
-            .background(KxaTheme.colors.surfaceVariant)
-            .border(1.dp, KxaTheme.colors.borderSubtle, CircleShape)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        isPressed.value = true
-                        tryAwaitRelease()
-                        isPressed.value = false
-                    }
-                )
-            },
-        contentAlignment = Alignment.Center
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = KxaTheme.colors.surfaceVariant,
+        border = androidx.compose.foundation.BorderStroke(1.dp, KxaTheme.colors.borderSubtle),
+        modifier = modifier.size(44.dp)
     ) {
-        Text(text = emoji, fontSize = 20.sp)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = emoji, fontSize = 20.sp)
+        }
     }
 }
 

@@ -105,8 +105,8 @@ class AppViewModel @JvmOverloads constructor(
     val flyingReactions: StateFlow<List<FlyingReaction>> = _flyingReactions.asStateFlow()
 
     // Initial check for auth flow
-    private var initialIsSignUpMode = false
-    fun getInitialIsSignUp(): Boolean = initialIsSignUpMode
+    private val _isSignUpMode = MutableStateFlow(false)
+    val isSignUpMode: StateFlow<Boolean> = _isSignUpMode.asStateFlow()
 
     init {
         // Continuous simulated video timeline progression for active playback
@@ -126,7 +126,7 @@ class AppViewModel @JvmOverloads constructor(
 
     fun navigateTo(screen: AppScreen, isSignUp: Boolean = false) {
         if (screen == AppScreen.LOGIN) {
-            initialIsSignUpMode = isSignUp
+            _isSignUpMode.value = isSignUp
         }
         _currentScreen.value = screen
     }

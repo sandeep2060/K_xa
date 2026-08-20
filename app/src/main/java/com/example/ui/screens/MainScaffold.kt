@@ -58,6 +58,7 @@ fun MainScaffold(
     val reports by viewModel.reports.collectAsState()
     val auditLogs by viewModel.auditLogs.collectAsState()
     val adminMessage by viewModel.adminMessage.collectAsState()
+    val isSignUpMode by viewModel.isSignUpMode.collectAsState()
 
     // Handle system back navigation
     BackHandler(
@@ -136,7 +137,7 @@ fun MainScaffold(
                                 viewModel.signUp(email, password, username, fullName, dob, cal, age)
                             },
                             onBackToOnboarding = { viewModel.navigateTo(AppScreen.ONBOARDING) },
-                            initialIsSignUp = viewModel.getInitialIsSignUp()
+                            initialIsSignUp = isSignUpMode
                         )
                     }
 
