@@ -94,7 +94,7 @@ fun LoginScreen(
     onBackToOnboarding: () -> Unit,
     initialIsSignUp: Boolean = false
 ) {
-    var isSignUp by remember { mutableStateOf(initialIsSignUp) }
+    var isSignUp by remember(initialIsSignUp) { mutableStateOf(initialIsSignUp) }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -142,6 +142,23 @@ fun LoginScreen(
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
+
+    // Password strength calculation
+    val passwordStrength = remember(password) {
+        if (password.isEmpty()) 0
+        else {
+            var score = 0
+            if (password.length >= 6) score++
+            if (password.length >= 8) score++
+            if (password.any { it.isDigit() }) score++
+            if (password.any { !it.isLetterOrDigit() }) score++
+            score
+        }
+    }
+
+    val passwordsMatch = remember(password, confirmPassword) {
+        password.isNotEmpty() && confirmPassword.isNotEmpty() && password == confirmPassword
+    }
 
     fun clearAllErrors() {
         errorMessage = null
@@ -406,6 +423,48 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // Quick Demo Fill for easy testing in Sign In mode
+        if (!isSignUp) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(PurplePrimary.copy(alpha = 0.12f))
+                    .border(1.dp, PurplePrimary.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                    .clickable {
+                        email = "sandeepgaire8@gmail.com"
+                        password = "password123"
+                        clearAllErrors()
+                    }
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "⚡ Quick Test:",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = PurpleLight
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "sandeepgaire8@gmail.com",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = KxaTheme.colors.textSecondary
+                    )
+                }
+                Text(
+                    text = "Autofill",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = CyanAccent
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+        }
+
         // Sign Up Additional Fields
         if (isSignUp) {
             KXaTextField(
@@ -526,6 +585,74 @@ fun LoginScreen(
             testTag = "input_login_password"
         )
 
+        // Password Strength Indicator (Sign Up Only)
+        if (isSignUp && password.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Password Strength",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                        color = KxaTheme.colors.textMuted
+                    )
+                    val strengthLabel = when (passwordStrength) {
+                        1 -> "Weak"
+                        2 -> "Fair"
+                        3 -> "Good"
+                        4 -> "Strong"
+                        else -> "Too short"
+                    }
+                    val strengthColor = when (passwordStrength) {
+                        1 -> LiveRed
+                        2 -> Color(0xFFF59E0B)
+                        3 -> Color(0xFF10B981)
+                        4 -> CyanAccent
+                        else -> LiveRed
+                    }
+                    Text(
+                        text = strengthLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
+                        ),
+                        color = strengthColor
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    for (i in 1..4) {
+                        val activeColor = when {
+                            passwordStrength >= i && passwordStrength == 1 -> LiveRed
+                            passwordStrength >= i && passwordStrength == 2 -> Color(0xFFF59E0B)
+                            passwordStrength >= i && passwordStrength == 3 -> Color(0xFF10B981)
+                            passwordStrength >= i -> CyanAccent
+                            else -> KxaTheme.colors.borderSubtle
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(KxaRadius.pill))
+                                .background(activeColor)
+                        )
+                    }
+                }
+            }
+        }
+
         // Confirm Password Field (Sign Up Only)
         if (isSignUp) {
             Spacer(modifier = Modifier.height(12.dp))
@@ -565,6 +692,33 @@ fun LoginScreen(
                 ),
                 testTag = "input_login_confirm_password"
             )
+
+            // Password Match Live Badge
+            if (confirmPassword.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (passwordsMatch) {
+                        Text(
+                            text = "✓ Passwords match",
+                            color = OnlineGreen,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    } else {
+                        Text(
+                            text = "✕ Passwords do not match",
+                            color = LiveRed,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
